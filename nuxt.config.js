@@ -31,6 +31,9 @@ export default {
     ],
     titleTemplate: 'Find@CTMartin'
   },
+  loading: {
+    color: 'black'
+  },
   mode: 'spa',
   modern: 'client',
   typescript: {

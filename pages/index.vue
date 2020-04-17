@@ -1,34 +1,74 @@
 <template>
   <div>
-    <h1>Hello World</h1>
-    <p>Lorem ipsum</p>
-    <h2>Sites</h2>
-    <ul>
-      <li v-for="site in meta.sites" :key="site">
-        {{ site }}
-      </li>
-    </ul>
-    <h2>Types</h2>
-    <ul>
-      <li v-for="_type in meta.types" :key="_type">
-        {{ _type }}
-      </li>
-    </ul>
-    <h2>Works</h2>
-    <ul>
-      <li v-for="work in works" :key="work.url">
-        {{ work.name }}
-        <ul>
-          <li>{{ work.type }} @ {{ work.site }}</li>
-          <li>{{ work.description }}</li>
-          <li><a :href="work.url">{{ work.url }}</a></li>
-        </ul>
-      </li>
-    </ul>
+    <h1>Find@CTMartin</h1>
+    <p>Search engine/finder for content on my websites.</p>
+    <div id="searchFilters">
+      <div>
+        <span>Sites:</span>
+        <span v-for="site in meta.sites" :key="site">
+          <span v-if="selected.sites.includes(site)" class="btn" @click="selected.sites.splice(selected.sites.indexOf(site), 1)">{{ site }}</span>
+          <span v-else class="btn btn-inverse" @click="selected.sites.push(site)"><s>{{ site }}</s></span>
+        </span>
+      </div>
+      <div>
+        <span>Types:</span>
+        <span v-for="_type in meta.types" :key="_type">
+          <span v-if="selected.types.includes(_type)" class="btn" @click="selected.types.splice(selected.types.indexOf(_type), 1)">{{ _type.replace(/([a-z])([A-Z])/, "$1 $2") }}</span>
+          <span v-else class="btn btn-inverse" @click="selected.types.push(_type)"><s>{{ _type.replace(/([a-z])([A-Z])/, "$1 $2") }}</s></span>
+        </span>
+      </div>
+      <input v-model="stringFilter" placeholder="Search" type="text">
+    </div>
+    <article v-for="work in filteredItems" :key="work.url" class="article-list">
+      <a :href="work.url">
+        <h2>{{ work.name }}</h2>
+        <p>
+          {{ work.description }}
+        </p>
+        <p>
+          {{ work.type.replace(/([a-z])([A-Z])/, "$1 $2") }} @ {{ work.site }}{{ work.date ? ` (${work.date})` : '' }}
+        </p>
+      </a>
+    </article>
   </div>
 </template>
 
+<style lang="scss">
+// I really should make this a proper deal (with ids/classes), but the verbosity needed by templating makes that a pain
+#searchFilters {
+  border: 1px solid black;
+  border-radius: 3px;
+  box-sizing: border-box;
+  margin-bottom: 1em;
+  padding:1em;
+
+  div {
+    display: inline-block;
+    padding-right: 16px;
+
+    span:nth-child(2) .btn {
+      margin-left: 0;
+    }
+  }
+
+  input {
+    display: block;
+    margin-top: 0.5em;
+    width: 100%;
+  }
+}
+</style>
+
 <script lang="ts">
+/**
+ * Decodes HTML Entities
+ * @param string
+ * @return {string}
+ */
+function decodeEntities (string: string): string {
+  return new DOMParser().parseFromString(`${string}`, 'text/html').body.textContent
+}
+
 /**
  * Handler for Schema.org parsing
  *
@@ -60,9 +100,10 @@ function schemaParse (data: object|object[]): object[] {
       case 'ImageGallery':
         works.push({
           type: data['@type'],
-          name: data.headline || data.name,
-          description: data.description,
-          url: data.url || data.mainEntityOfPage['@id'] || data.mainEntityOfPage
+          name: decodeEntities(data.headline || data.name),
+          description: decodeEntities(data.description),
+          url: data.url || data.mainEntityOfPage['@id'] || data.mainEntityOfPage,
+          date: data.datePublished
         })
         break
 
@@ -125,7 +166,17 @@ function fetchAllSites (sites: object): object[] {
       }
     })
 
-    works = works.flat()
+    works = works.flat().sort((a, b) => {
+      if (!a.date && !b.date) {
+        return 0
+      } else if (!b.date || a.date > b.date) {
+        return -1
+      } else if (!a.date || a.date < b.date) {
+        return 1
+      } else {
+        return 0
+      }
+    })
 
     const out = {
       fetchFails,
@@ -176,6 +227,7 @@ export default {
         sites: [],
         types: []
       },
+      stringFilter: '',
       works: []
     }
   },
@@ -183,7 +235,14 @@ export default {
     filteredItems (): [] {
       return this.works.filter(i =>
         this.selected.sites.includes(i.site) &&
-        this.selected.types.includes(i.type)
+        this.selected.types.includes(i.type) &&
+        (
+          this.stringFilter === '' ||
+          (
+            i.name.toLowerCase().includes(this.stringFilter.toLowerCase()) ||
+            i.description.toLowerCase().includes(this.stringFilter.toLowerCase())
+          )
+        )
       )
     }
   }
