@@ -1,0 +1,18 @@
+image: node:12
+
+before_script:
+  - npm ci
+
+cache:
+  paths:
+    - node_modules/
+
+pages:
+  script:
+    - npm run generate
+    - "curl -X POST \"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE/purge_cache\" -H \"Authorization: Bearer $CLOUDFLARE_API_KEY\" -H \"Content-Type: application/json\" --data '{\"purge_everything\":true}'"
+  artifacts:
+    paths:
+      - dist
+  only:
+    - master
