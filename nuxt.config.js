@@ -12,15 +12,24 @@ export default {
     }
   },
   buildModules: ['@nuxt/typescript-build'],
+  css: [
+    '@/assets/theme/assets/css/main.scss'
+  ],
   generate: {
     fallback: true
   },
   head: {
-    titleTemplate: 'Find @ Christian Martin',
+    bodyAttrs: {
+      id: '__nuxt_body'
+    },
+    headAttrs: {
+      lang: 'en'
+    },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' }
-    ]
+    ],
+    titleTemplate: 'Find@CTMartin'
   },
   mode: 'spa',
   modern: 'client',
