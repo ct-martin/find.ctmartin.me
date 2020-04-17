@@ -1,6 +1,8 @@
 # find.ctmartin.me
 A Schema.org search engine for my websites
 
+[![pipeline status](https://gitlab.com/ctmartin/find-ctmartin-me/badges/master/pipeline.svg)](https://gitlab.com/ctmartin/find-ctmartin-me/-/commits/master)
+
 I added a Schema.org-based API for several of my websites.
 Now, I'm adding a finder to allow filtering and searching for things in those sites.
 
