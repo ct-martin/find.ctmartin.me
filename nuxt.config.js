@@ -16,6 +16,7 @@ export default {
     '@/assets/theme/assets/css/main.scss'
   ],
   generate: {
+    dir: 'public',
     fallback: true
   },
   head: {
