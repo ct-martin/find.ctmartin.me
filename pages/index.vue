@@ -60,13 +60,43 @@
 </style>
 
 <script lang="ts">
+import Vue from 'vue'
+
+interface SimpleWork {
+  date: string|Date|undefined,
+  description: string,
+  name: string,
+  site: string,
+  type: string,
+  url: string
+}
+
+interface SiteList {
+  name: string,
+  url: string
+}
+
+interface SearchData {
+  fetchFails: number,
+  meta: {
+    sites: string[],
+    types: string[]
+  },
+  selected: {
+    sites: string[],
+    types: string[]
+  },
+  stringFilter: string,
+  works: SimpleWork[]
+}
+
 /**
  * Decodes HTML Entities
  * @param string
  * @return {string}
  */
 function decodeEntities (string: string): string {
-  return new DOMParser().parseFromString(`${string}`, 'text/html').body.textContent
+  return (new DOMParser().parseFromString(`${string}`, 'text/html').body.textContent) || ''
 }
 
 /**
@@ -74,22 +104,23 @@ function decodeEntities (string: string): string {
  *
  * An empty/no-op value should be an empty array ([])
  * @param data Schema.org data. Assumes valid syntax; limited subset supported though
+ * @param site site name
  * @return Array array of contents, reduced to basic meta
  */
-function schemaParse (data: object|object[]): object[] {
-  let works: object[] = []
+function schemaParse (data: any|any[], site: string): SimpleWork[] {
+  let works: SimpleWork[] = []
 
   if (Array.isArray(data)) {
     data.forEach((i) => {
-      works = works.concat(schemaParse(i))
+      works = works.concat(schemaParse(i, site))
     })
   } else {
     switch (data['@type']) {
       case 'ItemList':
-        works = works.concat(schemaParse(data.itemListElement))
+        works = works.concat(schemaParse(data.itemListElement, site))
         break
       case 'ListItem':
-        works = works.concat(schemaParse(data.item))
+        works = works.concat(schemaParse(data.item, site))
         break
 
       case 'WebPage':
@@ -99,11 +130,12 @@ function schemaParse (data: object|object[]): object[] {
       case 'TechArticle':
       case 'ImageGallery':
         works.push({
-          type: data['@type'],
-          name: decodeEntities(data.headline || data.name),
+          date: data.datePublished,
           description: decodeEntities(data.description),
-          url: data.url || data.mainEntityOfPage['@id'] || data.mainEntityOfPage,
-          date: data.datePublished
+          name: decodeEntities(data.headline || data.name),
+          site,
+          type: data['@type'],
+          url: data.url || data.mainEntityOfPage['@id'] || data.mainEntityOfPage
         })
         break
 
@@ -123,13 +155,13 @@ function schemaParse (data: object|object[]): object[] {
  * @param url: the URL to fetch the JSON from
  * @return array of simplified works
  */
-function fetchSite (name: string, url: string): object[] {
+function fetchSite (name: string, url: string): Promise<SimpleWork[]> {
   return fetch(url)
     .then((res) => {
       return res.json()
     })
     .then((data) => {
-      const works = schemaParse(data)
+      const works: SimpleWork[] = schemaParse(data, name)
         .map((i) => {
           return {
             ...i,
@@ -147,31 +179,37 @@ function fetchSite (name: string, url: string): object[] {
  * @param sites: {name:string, url:string}[] - array of sites to fetch with names
  * @return object[] - simplified array of works
  */
-function fetchAllSites (sites: object): object[] {
-  const fetches = []
+function fetchAllSites (sites: SiteList[]): Promise<SearchData> {
+  const fetches: Promise<SimpleWork[]>[] = []
   sites.forEach(({ name, url }) => {
     fetches.push(fetchSite(name, url))
   })
 
   return Promise.allSettled(fetches).then((promises) => {
-    let works = []
-    let fetchFails = 0
+    let works: SimpleWork[] = []
+    let fetchFails: number = 0
 
     promises.forEach((res) => {
       if (res.status === 'fulfilled') {
-        works.push(res.value)
+        works.concat(res.value)
       } else {
         fetchFails++
         console.error(res.reason)
       }
     })
 
-    works = works.flat().sort((a, b) => {
-      if (!a.date && !b.date) {
-        return 0
-      } else if (!b.date || a.date > b.date) {
+    works = works.sort((a, b) => {
+      if (a.date === undefined || b.date === undefined) {
+        if (a.date === undefined && b.date === undefined) {
+          return 0
+        } else if (a.date === undefined) {
+          return 1
+        } else {
+          return -1
+        }
+      } else if (a.date > b.date) {
         return -1
-      } else if (!a.date || a.date < b.date) {
+      } else if (a.date < b.date) {
         return 1
       } else {
         return 0
@@ -188,8 +226,9 @@ function fetchAllSites (sites: object): object[] {
         sites: [],
         types: []
       },
+      stringFilter: '',
       works
-    }
+    } as SearchData
 
     works.forEach((i) => {
       if (!out.meta.sites.includes(i.site)) {
@@ -206,9 +245,9 @@ function fetchAllSites (sites: object): object[] {
   })
 }
 
-export default {
+export default Vue.extend({
   asyncData () {
-    const sites = [
+    const sites: SiteList[] = [
       { name: 'Blog', url: 'https://blog.ctmartin.me/index.json' },
       { name: 'Food', url: 'https://food.ctmartin.me/index.json' },
       { name: 'Visualizations', url: 'https://vis.ctmartin.me/index.json' }
@@ -229,22 +268,23 @@ export default {
       },
       stringFilter: '',
       works: []
-    }
+    } as SearchData
   },
   computed: {
-    filteredItems (): [] {
-      return this.works.filter(i =>
-        this.selected.sites.includes(i.site) &&
-        this.selected.types.includes(i.type) &&
+    filteredItems (): SimpleWork[] {
+      const data: SearchData = this as SearchData
+      return data.works.filter(i =>
+        data.selected.sites.includes(i.site) &&
+        data.selected.types.includes(i.type) &&
         (
-          this.stringFilter === '' ||
+          data.stringFilter === '' ||
           (
-            i.name.toLowerCase().includes(this.stringFilter.toLowerCase()) ||
-            i.description.toLowerCase().includes(this.stringFilter.toLowerCase())
+            i.name.toLowerCase().includes(data.stringFilter.toLowerCase()) ||
+            i.description.toLowerCase().includes(data.stringFilter.toLowerCase())
           )
         )
       )
     }
   }
-}
+})
 </script>
