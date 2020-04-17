@@ -191,7 +191,7 @@ function fetchAllSites (sites: SiteList[]): Promise<SearchData> {
 
     promises.forEach((res) => {
       if (res.status === 'fulfilled') {
-        works.concat(res.value)
+        works = works.concat(res.value)
       } else {
         fetchFails++
         console.error(res.reason)
