@@ -123,12 +123,12 @@ function schemaParse (data: any|any[], site: string): SimpleWork[] {
         works = works.concat(schemaParse(data.item, site))
         break
 
-      case 'WebPage':
-      case 'Recipe':
       case 'Article':
       case 'BlogPosting':
-      case 'TechArticle':
       case 'ImageGallery':
+      case 'Recipe':
+      case 'TechArticle':
+      case 'WebPage':
         works.push({
           date: data.datePublished,
           description: decodeEntities(data.description),
