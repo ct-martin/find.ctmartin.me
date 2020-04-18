@@ -21,7 +21,7 @@
           <small>&copy; 2020 Christian Martin</small>
         </div>
         <div id="footer-source">
-          <small><a href="https://github.com/ct-martin/find.ctmartin.me" target="_blank">Source</a></small>
+          <small><a href="https://github.com/ct-martin/find.ctmartin.me" rel="noopener" target="_blank">Source</a></small>
         </div>
         <div id="footer-baseurl">
           <small>https://find.ctmartin.me/</small>
