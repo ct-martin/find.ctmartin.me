@@ -5,16 +5,16 @@
     <div id="searchFilters">
       <div>
         <span>Sites:</span>
-        <span v-for="site in meta.sites" :key="site">
-          <span v-if="selected.sites.includes(site)" class="btn" @click="selected.sites.splice(selected.sites.indexOf(site), 1)">{{ site }}</span>
-          <span v-else class="btn btn-inverse" @click="selected.sites.push(site)"><s>{{ site }}</s></span>
+        <span v-for="site in meta.sites" :key="site" class="btn" :class="{ 'btn-inverse': !selected.sites.includes(site) }">
+          <input :id="site" v-model="selected.sites" type="checkbox" :value="site">
+          <label :for="site">{{ site }}</label>
         </span>
       </div>
       <div>
         <span>Types:</span>
-        <span v-for="_type in meta.types" :key="_type">
-          <span v-if="selected.types.includes(_type)" class="btn" @click="selected.types.splice(selected.types.indexOf(_type), 1)">{{ _type.replace(/([a-z])([A-Z])/, "$1 $2") }}</span>
-          <span v-else class="btn btn-inverse" @click="selected.types.push(_type)"><s>{{ _type.replace(/([a-z])([A-Z])/, "$1 $2") }}</s></span>
+        <span v-for="_type in meta.types" :key="_type" class="btn" :class="{ 'btn-inverse': !selected.types.includes(_type) }">
+          <input :id="_type" v-model="selected.types" type="checkbox" :value="_type">
+          <label :for="_type">{{ _type.replace(/([a-z])([A-Z])/, "$1 $2") }}</label>
         </span>
       </div>
       <input v-model="stringFilter" placeholder="Search" type="text">
@@ -22,6 +22,9 @@
     <article v-for="work in filteredItems" :key="work.url" class="article-list">
       <a :href="work.url">
         <h2>{{ work.name }}</h2>
+        <div v-if="work.image" class="list-image">
+          <img :src="work.image" alt="">
+        </div>
         <p>
           {{ work.description }}
         </p>
@@ -51,7 +54,15 @@
     }
   }
 
-  input {
+  input[type=checkbox] {
+    display: none;
+  }
+
+  .btn-inverse {
+    text-decoration: line-through;
+  }
+
+  input[type=text] {
     display: block;
     margin-top: 0.5em;
     width: 100%;
@@ -65,6 +76,7 @@ import Vue from 'vue'
 interface SimpleWork {
   date: string|Date|undefined,
   description: string,
+  image?: string,
   name: string,
   site: string,
   type: string,
@@ -157,6 +169,7 @@ function schemaParse (data: any|any[], site: string): SimpleWork[] {
         works.push({
           date: data.datePublished,
           description: decodeEntities(data.description),
+          image: data.image,
           name: decodeEntities(data.headline ?? data.name),
           site,
           type: data['@type'],
