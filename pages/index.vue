@@ -100,6 +100,31 @@ function decodeEntities (string: string): string {
 }
 
 /**
+ * Normalizes string for comparison
+ *
+ * * Unicode normalization
+ * * Lowercase (so case insensitive)
+ * * Undoes some pretty-type things (such as ellipsis and "smart" quotes)
+ *   * Goldmark's Typographer: https://github.com/yuin/goldmark#typographer-extension
+ *   * (TODO) Wikipedia's list of quotations: https://en.wikipedia.org/wiki/Quotation_mark
+ *     * To consider: how to handle `«`: as `<<` or `"`?
+ *
+ * @param string
+ * @return {string}
+ */
+function normalizeString (string: string): string {
+  return string
+    .replace(/[‘’]/, "'") // smart apos
+    .replace(/[“”]/, '"') // smart quote
+    .replace(/[–—]/, '-') // en-dash & em-dash
+    .replace(/…/, '...') // ellipsis
+    .replace(/«/, '<<') // left alt quote
+    .replace(/»/, '>>') // right alt quote
+    .normalize('NFKD')
+    .toLowerCase()
+}
+
+/**
  * Handler for Schema.org parsing
  *
  * An empty/no-op value should be an empty array ([])
@@ -273,14 +298,17 @@ export default Vue.extend({
   computed: {
     filteredItems (): SimpleWork[] {
       const data: SearchData = this as SearchData
+
+      const stringFilter:string = normalizeString(data.stringFilter)
+
       return data.works.filter(i =>
         data.selected.sites.includes(i.site) &&
         data.selected.types.includes(i.type) &&
         (
           data.stringFilter === '' ||
           (
-            i.name.toLowerCase().includes(data.stringFilter.toLowerCase()) ||
-            i.description.toLowerCase().includes(data.stringFilter.toLowerCase())
+            normalizeString(i.name).includes(stringFilter) ||
+            normalizeString(i.description).includes(stringFilter)
           )
         )
       )
