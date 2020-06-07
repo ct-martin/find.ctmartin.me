@@ -56,10 +56,14 @@
 
   input[type=checkbox] {
     display: none;
-  }
 
-  .btn-inverse {
-    text-decoration: line-through;
+    ~ label::before {
+      content: '✘ '
+    }
+
+    &:checked ~ label::before {
+      content: '✔ '
+    }
   }
 
   input[type=text] {
