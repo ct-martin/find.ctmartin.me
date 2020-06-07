@@ -20,15 +20,15 @@
   },
   "homepage": "https://github.com/ct-martin/find.ctmartin.me#readme",
   "dependencies": {
-    "@nuxt/typescript-runtime": "^0.4.5",
+    "@nuxt/typescript-runtime": "^0.4.9",
     "nuxt": "^2.12.2"
   },
   "devDependencies": {
-    "@nuxt/typescript-build": "^0.6.5",
+    "@nuxt/typescript-build": "^0.6.6",
     "@nuxtjs/eslint-config-typescript": "^1.0.2",
     "eslint": "^6.8.0",
-    "eslint-loader": "^4.0.0",
-    "node-sass": "^4.13.1",
+    "eslint-loader": "^4.0.2",
+    "node-sass": "^4.14.1",
     "sass-loader": "^8.0.2"
   }
 }
