@@ -177,7 +177,7 @@ function schemaParse (data: any|any[], site: string): SimpleWork[] {
           name: decodeEntities(data.headline ?? data.name),
           site,
           type: data['@type'],
-          url: data.url ?? data.mainEntityOfPage['@id'] ?? data.mainEntityOfPage
+          url: data.url ?? data.mainEntityOfPage?.['@id'] ?? data.mainEntityOfPage
         })
         break
 
