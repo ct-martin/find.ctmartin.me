@@ -96,7 +96,7 @@ interface SearchData {
  * @return {string}
  */
 function decodeEntities (string: string): string {
-  return (new DOMParser().parseFromString(`${string}`, 'text/html').body.textContent) || ''
+  return (new DOMParser().parseFromString(`${string}`, 'text/html').body.textContent) ?? ''
 }
 
 /**
@@ -132,10 +132,10 @@ function schemaParse (data: any|any[], site: string): SimpleWork[] {
         works.push({
           date: data.datePublished,
           description: decodeEntities(data.description),
-          name: decodeEntities(data.headline || data.name),
+          name: decodeEntities(data.headline ?? data.name),
           site,
           type: data['@type'],
-          url: data.url || data.mainEntityOfPage['@id'] || data.mainEntityOfPage
+          url: data.url ?? data.mainEntityOfPage['@id'] ?? data.mainEntityOfPage
         })
         break
 

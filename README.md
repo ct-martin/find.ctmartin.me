@@ -87,9 +87,9 @@ Mappings:
 {
   date: data.datePublished,
   description: data.description,
-  name: data.headline || data.name,
+  name: data.headline ?? data.name,
   site,
   type: data['@type'],
-  url: data.url || data.mainEntityOfPage['@id'] || data.mainEntityOfPage
+  url: data.url ?? data.mainEntityOfPage['@id'] ?? data.mainEntityOfPage
 }
 ```
