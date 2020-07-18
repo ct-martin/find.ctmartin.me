@@ -26,7 +26,7 @@
       <a :href="work.url">
         <h2>{{ work.name }}</h2>
         <div v-if="work.image" class="list-image">
-          <img :src="work.image" alt="">
+          <img :src="work.image" alt="" loading="lazy">
         </div>
         <p>
           {{ work.description }}
