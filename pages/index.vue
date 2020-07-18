@@ -3,21 +3,24 @@
     <h1>Find@CTMartin</h1>
     <p>Search engine/finder for content on my websites.</p>
     <div id="searchFilters">
-      <div>
+      <div id="searchSites">
         <span>Sites:</span>
         <span v-for="site in meta.sites" :key="site" class="btn" :class="{ 'btn-inverse': !selected.sites.includes(site) }">
           <input :id="site" v-model="selected.sites" type="checkbox" :value="site">
           <label :for="site">{{ site }}</label>
         </span>
       </div>
-      <div>
+      <div id="searchTypes">
         <span>Types:</span>
         <span v-for="_type in meta.types" :key="_type" class="btn" :class="{ 'btn-inverse': !selected.types.includes(_type) }">
           <input :id="_type" v-model="selected.types" type="checkbox" :value="_type">
           <label :for="_type">{{ _type.replace(/([a-z])([A-Z])/, "$1 $2") }}</label>
         </span>
       </div>
-      <input v-model="stringFilter" placeholder="Search" type="text">
+      <div id="searchText">
+        <label for="search">Search:</label>
+        <input id="search" v-model="stringFilter" type="text">
+      </div>
     </div>
     <article v-for="work in filteredItems" :key="work.url" class="article-list">
       <a :href="work.url">
@@ -45,11 +48,11 @@
   margin-bottom: 1em;
   padding:1em;
 
-  div {
+  #searchSites, #searchTypes {
     display: inline-block;
     padding-right: 16px;
 
-    span:nth-child(2) .btn {
+    .btn:nth-child(2) {
       margin-left: 0;
     }
   }
@@ -66,10 +69,18 @@
     }
   }
 
-  input[type=text] {
-    display: block;
+  #searchText {
+    display: flex;
     margin-top: 0.5em;
     width: 100%;
+
+    label {
+      padding-right: 0.5em;
+    }
+
+    input {
+      flex-grow: 1;
+    }
   }
 }
 </style>
