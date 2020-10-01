@@ -92,9 +92,9 @@ import { buildSearch, filterWorks, searchPlaceholder, SearchData, SimpleWork, Si
 export default Vue.extend({
   asyncData () {
     const sites: SiteList[] = [
-      { name: 'Blog', url: 'https://blog.ctmartin.me/index.json' },
-      { name: 'Food', url: 'https://food.ctmartin.me/index.json' },
-      { name: 'Visualizations', url: 'https://vis.ctmartin.me/index.json' }
+      { name: 'Blog', url: 'https://ctmartin.me/blog/index.json' },
+      { name: 'Food', url: 'https://ctmartin.me/food/index.json' },
+      { name: 'Visualizations', url: 'https://ctmartin.me/vis/index.json' }
     ]
 
     return buildSearch(sites)
