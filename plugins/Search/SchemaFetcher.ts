@@ -18,7 +18,7 @@ export interface FetchResults {
  * @return array of simplified works
  */
 export function fetchSite (name: string, url: string): Promise<SimpleWork[]> {
-  return fetch(url)
+  return fetch(url, { mode: 'cors' })
     .then((res) => {
       return res.json()
     })
